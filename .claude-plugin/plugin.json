@@ -1,7 +1,7 @@
 {
   "name": "webgamedev-structure",
-  "version": "0.1.0",
-  "description": "GameForge folder structure and P4 artist workflow guidance for //webgamedev assets.",
+  "version": "0.2.0",
+  "description": "GameForge folder structure and no-delete P4 artist workflow guidance for //webgamedev assets.",
   "author": {
     "name": "High 5 Games",
     "email": "michael.erickson@high5games.com"

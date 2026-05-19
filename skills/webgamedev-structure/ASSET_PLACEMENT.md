@@ -2,6 +2,8 @@
 
 Default final destination is `GAMEFORGE_folderstructure/ASSETS/LOCAL`. Use `GLOBAL` only for platform-wide or cross-game shared assets.
 
+For dropped folders or plugin handoffs, use `ASSET_FOLDER_INTAKE.md` first to inventory files, classify source versus runtime, and preview P4 activity before final delivery.
+
 ## Runtime Assets
 
 | Asset | Final path |

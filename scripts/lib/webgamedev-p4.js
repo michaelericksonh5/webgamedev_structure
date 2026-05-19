@@ -44,10 +44,13 @@ function printHelp() {
   console.log(`Usage: webgamedev-p4 <operation> [args] [--apply]
 
 Read-only operations:
-  doctor, classify, status, opened, info, set, login-status, client, changes, filelog, fstat, diff
+  doctor, classify, status, opened, info, set, login-status, client, where, have, files, changes, describe, filelog, fstat, print, diff
 
 Mutating operations requiring --apply:
-  sync, edit, add, reconcile, move, delete, revert, submit
+  sync, edit, add, reconcile, submit
+
+Blocked by H5G never-delete policy:
+  clean, delete, move, obliterate, revert, resolve, typemap
 
 Examples:
   webgamedev-p4 doctor

@@ -8,7 +8,7 @@ This plugin is intentionally inert on install. It ships one skill, documentation
 
 - GameForge runtime structure under `GAMEFORGE_folderstructure/ASSETS`.
 - `ASSETS/GLOBAL` to `//webgamedev/assets/_Common-New/` and `ASSETS/LOCAL` to `//webgamedev/<gamefolder>/`.
-- Artist-safe P4 setup, diagnostics, preview-first operations, and submit checklists.
+- Artist-safe P4 setup, diagnostics, preview-first add/edit operations, never-delete policy, and submit checklists.
 - Asset placement for Spine, video, symbols, backgrounds, UI, logo, big win, effects, fonts, audio, theme data, and source files.
 
 ## Optional Local Scripts
@@ -28,7 +28,7 @@ Mutating P4 operations require `--apply`; without it, the CLI prints the command
 .\scripts\webgamedev-p4.ps1 edit //webgamedev/mygame/texture/portrait/symbols/hp1.webp --apply
 ```
 
-Blocked operations include `p4 clean`, `p4 reconcile -w`, `p4 revert -w`, `p4 obliterate`, typemap edits, and binary conflict resolution.
+Blocked operations include `p4 clean`, `p4 delete`, `p4 move`, `p4 reconcile -d`, `p4 reconcile -w`, `p4 revert`, `p4 revert -w`, `p4 obliterate`, typemap edits, and binary conflict resolution. Reconcile automation uses add/edit only: `p4 reconcile -n -a -e` for previews and `p4 reconcile -a -e` with `--apply`.
 
 ## Development
 

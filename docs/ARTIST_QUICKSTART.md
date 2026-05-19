@@ -45,7 +45,7 @@ GAMEFORGE_folderstructure/ASSETS/LOCAL/data/themes/theme-h5g.json
 .\scripts\webgamedev-p4.ps1 reconcile //webgamedev/<gamefolder>/...
 ```
 
-`reconcile` previews by default. Add `--apply` only when the preview is correct.
+`reconcile` previews as `p4 reconcile -n -a -e` by default. Add `--apply` only when the add/edit preview is correct.
 
 ## 5. Submit
 

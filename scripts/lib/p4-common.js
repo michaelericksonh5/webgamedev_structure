@@ -10,8 +10,13 @@ const READ_ONLY_OPERATIONS = new Set([
   "opened",
   "status",
   "changes",
+  "describe",
   "filelog",
+  "files",
   "fstat",
+  "have",
+  "print",
+  "where",
   "diff"
 ]);
 
@@ -20,9 +25,6 @@ const MUTATING_OPERATIONS = new Set([
   "edit",
   "add",
   "reconcile",
-  "move",
-  "delete",
-  "revert",
   "submit"
 ]);
 
@@ -30,18 +32,20 @@ const PREVIEWABLE_MUTATIONS = new Set([
   "sync",
   "edit",
   "add",
-  "reconcile",
-  "move",
-  "delete",
-  "revert"
+  "reconcile"
 ]);
 
 const BLOCKED_OPERATIONS = new Set([
   "clean",
+  "delete",
+  "move",
   "obliterate",
+  "revert",
   "typemap",
   "resolve"
 ]);
+
+const SAFE_RECONCILE_FLAGS = new Set(["-a", "-e", "-ae", "-ea"]);
 
 function hasFlag(args, flag) {
   return args.includes(flag) || args.some((arg) => arg.startsWith(`${flag}=`));
@@ -49,11 +53,16 @@ function hasFlag(args, flag) {
 
 function rejectDangerous(operation, args) {
   if (BLOCKED_OPERATIONS.has(operation)) {
-    return `Blocked p4 ${operation}; this plugin never automates that operation.`;
+    return `Blocked p4 ${operation}; H5G never-delete policy does not allow this plugin to automate that operation.`;
   }
 
-  if ((operation === "reconcile" || operation === "revert") && hasFlag(args, "-w")) {
-    return `Blocked p4 ${operation} -w; workspace delete/revert automation is not allowed.`;
+  if (operation === "reconcile") {
+    if (hasFlag(args, "-w")) {
+      return "Blocked p4 reconcile -w; H5G never-delete policy does not allow workspace delete automation.";
+    }
+    if (args.some((arg) => arg === "-d" || (/^-[A-Za-z]+$/.test(arg) && arg.includes("d")))) {
+      return "Blocked p4 reconcile delete behavior; H5G never-delete policy allows reconcile add/edit only.";
+    }
   }
 
   return null;
@@ -64,7 +73,7 @@ function rejectUnsupportedFlags(operation, args) {
     return null;
   }
 
-  const flag = args.find((arg) => arg.startsWith("-"));
+  const flag = args.find((arg) => arg.startsWith("-") && (operation !== "reconcile" || !SAFE_RECONCILE_FLAGS.has(arg)));
   if (flag) {
     return `Blocked unsupported p4 ${operation} flag: ${flag}`;
   }
@@ -160,6 +169,11 @@ function buildP4Command(operation, options = {}) {
       };
     }
     return mutating(["submit", "-c", change, "-d", description], apply, false);
+  }
+
+  if (op === "reconcile") {
+    const targets = args.filter((arg) => !SAFE_RECONCILE_FLAGS.has(arg));
+    return mutating(["reconcile", ...(apply ? [] : ["-n"]), "-a", "-e", ...targets], apply, !apply);
   }
 
   if (PREVIEWABLE_MUTATIONS.has(op) && !apply) {

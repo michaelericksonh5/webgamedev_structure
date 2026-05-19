@@ -15,6 +15,7 @@ const {
   rejectDangerous
 } = require("../scripts/lib/p4-common");
 const {
+  REQUIRED_FILES,
   findForbiddenEntries,
   validatePackage
 } = require("../scripts/lib/validate-package");
@@ -32,7 +33,7 @@ function readText(relativePath) {
 test("manifest is skills-only and inert", () => {
   const manifest = readJson(".claude-plugin/plugin.json");
   assert.equal(manifest.name, "webgamedev-structure");
-  assert.equal(manifest.version, "0.1.0");
+  assert.equal(manifest.version, "0.2.0");
   assert.deepEqual(manifest.skills, ["./skills/webgamedev-structure"]);
   assert.equal(Object.hasOwn(manifest, "hooks"), false);
   assert.equal(Object.hasOwn(manifest, "mcpServers"), false);
@@ -51,9 +52,44 @@ test("required package files exist", () => {
     "scripts/p4-doctor.ps1",
     "scripts/p4-doctor.sh",
     "docs/ARTIST_QUICKSTART.md",
-    "skills/webgamedev-structure/SKILL.md"
+    "skills/webgamedev-structure/SKILL.md",
+    "skills/webgamedev-structure/PERFORCE_CLI_REFERENCE.md",
+    "skills/webgamedev-structure/ASSET_FOLDER_INTAKE.md"
   ]) {
     assert.equal(fs.existsSync(path.join(ROOT, relativePath)), true, relativePath);
+  }
+});
+
+test("skill entry includes GameForge, P4, and asset-folder trigger terms", () => {
+  const skill = readText("skills/webgamedev-structure/SKILL.md");
+  assert.match(skill, /^name: webgamedev-structure$/m);
+  for (const term of [
+    "GameForge",
+    "Game Forge",
+    "gameforge",
+    "game forge",
+    "webdev",
+    "webgamedev",
+    "//webgamedev",
+    "Perforce",
+    "P4",
+    "p4",
+    "sync",
+    "syncing",
+    "synching",
+    "checkout",
+    "check out",
+    "checking out",
+    "check in",
+    "checking in",
+    "submit",
+    "push updates",
+    "pushing updates",
+    "add assets",
+    "asset folders",
+    "dropped folders"
+  ]) {
+    assert.match(skill, new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
 });
 
@@ -102,6 +138,11 @@ test("source assets are classified separately from runtime delivery", () => {
 test("p4 command builder keeps read-only diagnostics direct", () => {
   assert.deepEqual(buildP4Command("login-status").args, ["login", "-s"]);
   assert.deepEqual(buildP4Command("client").args, ["client", "-o"]);
+  assert.deepEqual(buildP4Command("where", { args: ["//webgamedev/mygame/..."] }).args, ["where", "//webgamedev/mygame/..."]);
+  assert.deepEqual(buildP4Command("have", { args: ["//webgamedev/mygame/..."] }).args, ["have", "//webgamedev/mygame/..."]);
+  assert.deepEqual(buildP4Command("files", { args: ["//webgamedev/mygame/..."] }).args, ["files", "//webgamedev/mygame/..."]);
+  assert.deepEqual(buildP4Command("describe", { args: ["12345"] }).args, ["describe", "12345"]);
+  assert.deepEqual(buildP4Command("print", { args: ["//webgamedev/mygame/file.webp#3"] }).args, ["print", "//webgamedev/mygame/file.webp#3"]);
   assert.deepEqual(buildP4Command("diff", { args: ["//webgamedev/mygame/..."] }).args, ["diff", "-sa", "//webgamedev/mygame/..."]);
 });
 
@@ -109,11 +150,7 @@ test("mutating p4 operations require apply or preview flags", () => {
   const previewTargets = {
     sync: ["//webgamedev/mygame/..."],
     edit: ["//webgamedev/mygame/file.webp"],
-    add: ["//webgamedev/mygame/file.webp"],
-    reconcile: ["//webgamedev/mygame/..."],
-    move: ["//webgamedev/mygame/old.webp", "//webgamedev/mygame/new.webp"],
-    delete: ["//webgamedev/mygame/file.webp"],
-    revert: ["//webgamedev/mygame/file.webp"]
+    add: ["//webgamedev/mygame/file.webp"]
   };
 
   for (const [operation, args] of Object.entries(previewTargets)) {
@@ -126,6 +163,26 @@ test("mutating p4 operations require apply or preview flags", () => {
     assert.equal(apply.ok, true, operation);
     assert.equal(apply.preview, false, operation);
     assert.deepEqual(apply.args, [operation, ...args], operation);
+  }
+});
+
+test("reconcile automation is add/edit only", () => {
+  const preview = buildP4Command("reconcile", { args: ["//webgamedev/mygame/..."] });
+  assert.equal(preview.ok, true);
+  assert.equal(preview.preview, true);
+  assert.deepEqual(preview.args, ["reconcile", "-n", "-a", "-e", "//webgamedev/mygame/..."]);
+
+  const apply = buildP4Command("reconcile", { args: ["//webgamedev/mygame/..."], apply: true });
+  assert.equal(apply.ok, true);
+  assert.equal(apply.preview, false);
+  assert.deepEqual(apply.args, ["reconcile", "-a", "-e", "//webgamedev/mygame/..."]);
+});
+
+test("reconcile blocks delete, workspace, combined delete, and unsupported flags", () => {
+  for (const flag of ["-d", "-ad", "-da", "-w", "-x"]) {
+    const spec = buildP4Command("reconcile", { args: [flag, "//webgamedev/mygame/..."] });
+    assert.equal(spec.ok, false, flag);
+    assert.equal(spec.blocked, true, flag);
   }
 });
 
@@ -145,12 +202,22 @@ test("submit requires apply, changelist, and description", () => {
 
 test("dangerous p4 operations are blocked", () => {
   assert.match(rejectDangerous("clean", []), /Blocked/);
+  assert.match(rejectDangerous("delete", []), /H5G never-delete policy/);
+  assert.match(rejectDangerous("move", []), /H5G never-delete policy/);
   assert.match(rejectDangerous("obliterate", []), /Blocked/);
+  assert.match(rejectDangerous("revert", []), /H5G never-delete policy/);
   assert.match(rejectDangerous("typemap", []), /Blocked/);
   assert.match(rejectDangerous("resolve", []), /Blocked/);
+  assert.match(rejectDangerous("reconcile", ["-d"]), /never-delete policy/);
   assert.match(rejectDangerous("reconcile", ["-w"]), /Blocked/);
-  assert.match(rejectDangerous("revert", ["-w"]), /Blocked/);
+  assert.equal(buildP4Command("delete", { args: ["//webgamedev/mygame/file.webp"] }).ok, false);
+  assert.equal(buildP4Command("move", { args: ["//webgamedev/mygame/old.webp", "//webgamedev/mygame/new.webp"] }).ok, false);
+  assert.equal(buildP4Command("revert", { args: ["//webgamedev/mygame/file.webp"] }).ok, false);
   assert.match(buildP4Command("edit", { args: ["-x", "//webgamedev/mygame/file.webp"] }).reason, /unsupported/);
+});
+
+test("package validator requires Perforce CLI reference", () => {
+  assert.equal(REQUIRED_FILES.includes("skills/webgamedev-structure/PERFORCE_CLI_REFERENCE.md"), true);
 });
 
 test("package validator passes", () => {

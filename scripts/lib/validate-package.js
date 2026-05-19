@@ -31,8 +31,10 @@ const REQUIRED_FILES = [
   "package.json",
   "skills/webgamedev-structure/SKILL.md",
   "skills/webgamedev-structure/GAMEFORGE_STRUCTURE.md",
+  "skills/webgamedev-structure/PERFORCE_CLI_REFERENCE.md",
   "skills/webgamedev-structure/PERFORCE_ARTIST_WORKFLOWS.md",
   "skills/webgamedev-structure/ASSET_PLACEMENT.md",
+  "skills/webgamedev-structure/ASSET_FOLDER_INTAKE.md",
   "skills/webgamedev-structure/INTEGRATIONS.md",
   "skills/webgamedev-structure/SAFETY_RULES.md",
   "docs/P4_CONFIG_TEMPLATE.md",
@@ -100,8 +102,8 @@ function validatePackage(root = ROOT) {
     if (manifest.name !== "webgamedev-structure") {
       errors.push("Manifest name must be webgamedev-structure");
     }
-    if (manifest.version !== "0.1.0") {
-      errors.push("Manifest version must be 0.1.0");
+    if (manifest.version !== "0.2.0") {
+      errors.push("Manifest version must be 0.2.0");
     }
     if (!Array.isArray(manifest.skills) || manifest.skills.length !== 1 || manifest.skills[0] !== "./skills/webgamedev-structure") {
       errors.push("Manifest must expose only ./skills/webgamedev-structure");

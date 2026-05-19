@@ -6,7 +6,7 @@ Always preview when P4 supports it:
 
 ```text
 p4 sync -n
-p4 reconcile -n
+p4 reconcile -n -a -e
 ```
 
 Bundled scripts default to previews for supported mutating operations and require `--apply` before running a real mutation.
@@ -20,9 +20,6 @@ sync
 edit
 add
 reconcile
-move
-delete
-revert
 submit
 ```
 
@@ -34,12 +31,18 @@ Never automate:
 
 ```text
 p4 clean
+p4 delete
+p4 move
+p4 reconcile -d
 p4 reconcile -w
+p4 revert
 p4 revert -w
 p4 obliterate
 typemap edits
 binary conflict resolution
 ```
+
+`p4 delete` does not obliterate history, but H5G never-delete policy still avoids delete-style operations. Write over/update to a new version instead of deleting or moving depot paths.
 
 ## Binary Art
 

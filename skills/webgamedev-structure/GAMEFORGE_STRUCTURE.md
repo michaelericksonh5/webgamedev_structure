@@ -93,4 +93,4 @@ assets/transition/
 
 Common source asset types include `banner`, `font`, `highPaySymbol`, `midPaySymbol`, `lowPaySymbol`, `specialSymbol`, `interface`, `popUp`, `reelSound`, `rollup`, `underscore`, `celebration`, `winBox`, `intro`, and `outro`.
 
-Most named source assets use `work/` for active files and `publish/` for approved handoff exports. Final runtime files still move to `GAMEFORGE_folderstructure/ASSETS` after export and review.
+Most named source assets use `work/` for active files and `publish/` for approved handoff exports. Final runtime files are placed in `GAMEFORGE_folderstructure/ASSETS` after export and review.

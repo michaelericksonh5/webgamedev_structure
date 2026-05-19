@@ -27,17 +27,24 @@ p4 client -o
 p4 opened
 p4 opened -as
 p4 status
-p4 reconcile -n
+p4 reconcile -n -a -e
 p4 sync -n
 p4 diff -sa
+p4 where
+p4 have
+p4 files
 p4 changes
+p4 describe
 p4 filelog
 p4 fstat
+p4 print
 ```
 
 Use `p4 opened -as` before editing binary art to see who else has files open.
 
 ## Sync
+
+Use this when the user says update, sync, syncing, synching, or get latest.
 
 Preview first:
 
@@ -73,30 +80,32 @@ p4 add //webgamedev/<gamefolder>/texture/portrait/symbols/hp1.webp
 Preview first:
 
 ```text
-p4 reconcile -n //webgamedev/<gamefolder>/...
+p4 reconcile -n -a -e //webgamedev/<gamefolder>/...
 ```
 
 Apply only after checking the preview:
 
 ```text
-p4 reconcile //webgamedev/<gamefolder>/...
+p4 reconcile -a -e //webgamedev/<gamefolder>/...
 ```
 
-Never automate `p4 reconcile -w`.
+Never automate default `p4 reconcile`, `p4 reconcile -d`, or `p4 reconcile -w`; they can open delete behavior.
 
-## Move, Delete, and Revert
+## Never-Delete Policy
 
-Use explicit targets and review the changelist before submit:
+Write over/update to a new version when content changes. Do not automate deletion-style operations:
 
 ```text
-p4 move oldPath newPath
-p4 delete filePath
-p4 revert filePath
+p4 delete
+p4 move
+p4 revert
 ```
 
-Never automate `p4 revert -w`.
+`p4 delete` creates a delete revision but does not obliterate older revisions. H5G policy still avoids delete-style operations so teams can go backward with nothing lost. Never automate `p4 revert -w`; reverting discards pending local work.
 
 ## Submit
+
+Use this when the user says check in, checking in, submit, push updates, or pushing updates. Perforce submits changelists; it does not use Git-style push.
 
 Before submitting:
 
