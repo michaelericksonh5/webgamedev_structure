@@ -33,8 +33,8 @@ function readText(relativePath) {
 test("manifest is skills-only and inert", () => {
   const manifest = readJson(".claude-plugin/plugin.json");
   assert.equal(manifest.name, "webgamedev-structure");
-  assert.equal(manifest.version, "0.2.0");
-  assert.deepEqual(manifest.skills, ["./skills/webgamedev-structure"]);
+  assert.equal(manifest.version, "0.2.1");
+  assert.equal(Object.hasOwn(manifest, "skills"), false);
   assert.equal(Object.hasOwn(manifest, "hooks"), false);
   assert.equal(Object.hasOwn(manifest, "mcpServers"), false);
   assert.equal(Object.hasOwn(manifest, "agents"), false);

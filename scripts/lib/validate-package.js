@@ -102,11 +102,11 @@ function validatePackage(root = ROOT) {
     if (manifest.name !== "webgamedev-structure") {
       errors.push("Manifest name must be webgamedev-structure");
     }
-    if (manifest.version !== "0.2.0") {
-      errors.push("Manifest version must be 0.2.0");
+    if (manifest.version !== "0.2.1") {
+      errors.push("Manifest version must be 0.2.1");
     }
-    if (!Array.isArray(manifest.skills) || manifest.skills.length !== 1 || manifest.skills[0] !== "./skills/webgamedev-structure") {
-      errors.push("Manifest must expose only ./skills/webgamedev-structure");
+    if (Object.prototype.hasOwnProperty.call(manifest, "skills")) {
+      errors.push("Manifest must rely on default skills/ discovery");
     }
     for (const forbidden of ["hooks", "mcpServers", "agents"]) {
       if (Object.prototype.hasOwnProperty.call(manifest, forbidden)) {
